@@ -46,4 +46,4 @@ app.route('/distance').get((req, res) => {
 
 app.route('*').all((req, res) => { res.redirect('/'); });
 
-app.listen(3000);
+app.listen(process.env.PORT || 1337);
