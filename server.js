@@ -1,9 +1,8 @@
 const express = require('express');
 const app = express();
-// const readlineSync = require('readline-sync');
-// const bodyParser = require('body-parser');
 const haversine = require('haversine');
-// const format = require('string-format');
+const Rollbar = require('rollbar');
+var rollbar = new Rollbar('4acbe5be579b4c8ca76de077d8c24f1b');
 
 
 app.route('/').get((req, res) => {
@@ -22,10 +21,15 @@ app.route('/distance').get((req, res) => {
             return res.status(400).send({error: 'Missing param'});
       }
 
-      start = start.split(',').map(val => Number(val));
-      end = end.split(',').map(val => Number(val));
+      try {
+            start = start.split(',').map(val => Number(val));
+            end = end.split(',').map(val => Number(val));
+      } catch (e) {
+            rollbar.error(e);
+      }
 
       if (start.length != 2 || end.length != 2) {
+            rollbar.error('Wrong request');
             return res.status(400).send({error: 'Missing point'});
       }
 
@@ -46,4 +50,5 @@ app.route('/distance').get((req, res) => {
 
 app.route('*').all((req, res) => { res.redirect('/'); });
 
+app.use(rollbar.errorHandler());
 app.listen(process.env.PORT || 1337);
